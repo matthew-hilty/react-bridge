@@ -1,0 +1,56 @@
+{ isFunction, isString, memoize, shallowCopy } = require './utilities'
+
+connectTo = \_eventHandler ->
+  eventHandler = _eventHandler
+
+createInjectable = \template ->
+  getHandlerForType = null
+
+  inject = \_getHandlerForType ->
+    getHandlerForType = _getHandlerForType
+
+  getFactory = ->
+    template getHandlerForType if isFunction getHandlerForType
+
+  { inject, getFactory }
+
+embedEventInside = \capsule \event ->
+  capsule.event = event
+  capsule
+
+exportReactEvents = \event ->
+  eventHandler event if isFunction eventHandler
+
+getCapsule = (type, label/capsule, handler) ->
+  if isString label/capsule 
+    { handler, label: label/capsule, type }
+  else
+    capsule = shallowCopy label/capsule
+    capsule.handler = handler
+    capsule.type = type
+    capsule
+
+_getInjectedFactory = (template, type) -> (label/capsule) ->
+  getHandlerForType = \eventType ->
+    wrap = getWrapper (type, label/capsule, eventType)
+    \event -> exportReactEvents (wrap event)
+
+  injectable = createInjectable template
+  injectable.inject getHandlerForType
+  injectable.getFactory ()
+
+getInjectedFactory = (template, type) ->
+  memoize (_getInjectedFactory (template, type), hasher)
+
+getWrapper = (type, label/capsule, eventType) ->
+  # Returns a function that embeds an event inside the capsule.
+  embedEventInside (getCapsule (type, label/capsule, eventType))
+
+hasher = \val ->
+  if isString val then val else stringify val
+
+eventHandler = null
+
+{ stringify } = JSON
+
+module.exports = { connectTo, getInjectedFactory }

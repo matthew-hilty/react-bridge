@@ -1,0 +1,42 @@
+hasType = \type \val ->
+  "[object #{type}]" == toString val
+
+isArray = \val ->
+  val instanceof Array
+
+memoize = (fn, hasher) ->
+  memo = {}
+  hasher = identity unless isFunction hasher
+  (args...) ->
+    key = hasher args...
+    if memo.hasOwnProperty key
+      memo[key]
+    else
+      memo[key] = fn args...
+
+shallowCopy = \val ->
+  switch
+    when isObject val
+      copy = {}
+      copy[key] = prop for own key, prop of val
+      copy
+    when isArray val
+      val.map identity
+    else
+      val
+
+toString = \val ->
+  ObjProto.toString.call val
+
+[isFunction, isObject, isString] =
+  ['Function', 'Object', 'String'].map hasType
+
+ObjProto = Object.prototype
+
+module.exports = {
+  isFunction
+  isObject
+  isString
+  memoize
+  shallowCopy
+}

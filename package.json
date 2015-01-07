@@ -1,0 +1,30 @@
+{
+  "name": "react-bridge",
+  "version": "0.0.0",
+  "description": "A library that aggregates React events and buses them to a definable client function.",
+  "directories": {
+    "lib": "./lib"
+  },
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "github.com/matthew-hilty/react-bridge.git"
+  },
+  "keywords": [
+    "react-bridge",
+    "react",
+    "reactjs",
+    "bridge",
+    "controller",
+    "bus",
+    "event-bus"
+  ],
+  "author": "Matthew Hilty",
+  "license": "MIT",
+  "dependencies": {
+    "react": "~0.12.2"
+  }
+}

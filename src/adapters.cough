@@ -1,0 +1,65 @@
+{ a, button, form, input, label }   = require('react').DOM
+{ getAdapter }                      = require './adapter-utilities'
+{ isObject, isString, shallowCopy } = require './utilities'
+
+BUTTON   = 'button'
+CHECKBOX = 'checkbox'
+FORM     = 'form'
+LABEL    = 'label'
+LINK     = 'link'
+PASSWORD = 'password'
+TEXT     = 'text'
+
+onChange = 'onChange'
+onClick  = 'onClick'
+onSubmit = 'onSubmit'
+
+collectAdapters = (container, data) ->
+  for record in data
+    container[dollarize record[3]] = getAdapter record
+  container
+
+dollarize = \string ->
+  '$' + string
+
+ensureCheckboxProps = \val ->
+  if isObject val
+    newProps = shallowCopy val
+    newProps.type = CHECKBOX
+    newProps
+  else
+    { type: CHECKBOX }
+
+ensureLinkProps = \val ->
+  if isString val then { href: val } else shallowCopy val
+
+ensurePasswordProps = \val ->
+  if isObject val
+    newProps = shallowCopy val
+    newProps.type = PASSWORD
+    newProps
+  else
+    { type: PASSWORD }
+
+ensureProps = \val ->
+  if isObject val then shallowCopy val else {}
+
+ensureTextProps = \val ->
+  if isString val
+    { placeholder: val, type: TEXT }
+  else
+    newProps = shallowCopy val
+    newProps.type = TEXT
+    newProps
+
+records = [
+  [onClick,  ensureProps,         button, BUTTON  ]
+  [onClick,  ensureCheckboxProps, input,  CHECKBOX]
+  [onSubmit, ensureProps,         form,   FORM    ]
+  [onClick,  ensureProps,         label,  LABEL   ]
+  [onClick,  ensureLinkProps,     a,      LINK    ]
+  [onChange, ensurePasswordProps, input,  PASSWORD]
+  [onChange, ensureTextProps,     input,  TEXT    ]
+]
+
+module.exports = collectAdapters ({}, records)

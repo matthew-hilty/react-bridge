@@ -1,0 +1,5 @@
+adapters      = require './adapters'
+{ connectTo } = require './factory-injector'
+sensitize     = require './sensitive-component'
+
+module.exports = { adapters, connectTo, sensitize }

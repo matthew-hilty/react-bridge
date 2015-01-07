@@ -1,0 +1,34 @@
+{ getInjectedFactory } = require './factory-injector'
+{ isFunction }         = require './utilities'
+
+getAdapter = \record ->
+  [defaultEventType, ensureProps, reactFactory, adapterType] = record
+  getInjectedFactory (
+    getTemplate (defaultEventType, ensureProps, reactFactory)
+    adapterType
+  )
+
+getTemplate = (defaultEventType, ensureProps, reactFactory) ->
+  _inject = inject (defaultEventType, ensureProps)
+
+  (getHandlerForType) -> (props, components...) ->
+    newProps = _inject (getHandlerForType, props)
+    reactFactory (newProps, components...)
+
+inject = (defaultEventType, ensureProps) -> (getHandlerForType, props) ->
+  needsHandler = true
+  newProps = ensureProps props
+  for own key, value of newProps
+    if isHandler key
+      needsHandler = false
+      newProps[key] = getHandlerForType key unless isFunction value
+  if needsHandler
+    newProps[defaultEventType] = getHandlerForType defaultEventType
+  newProps
+
+isHandler = \val ->
+  handlerRegex.test val
+
+handlerRegex = /^on[A-Z]/
+
+module.exports = { getAdapter }
