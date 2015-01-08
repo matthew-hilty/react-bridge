@@ -1,5 +1,7 @@
 { isFunction, isString, memoize, shallowCopy } = require './utilities'
 
+eventHandler = null
+
 connectTo = \_eventHandler ->
   eventHandler = _eventHandler
 
@@ -48,8 +50,6 @@ getWrapper = (type, label/capsule, eventType) ->
 
 hasher = \val ->
   if isString val then val else stringify val
-
-eventHandler = null
 
 { stringify } = JSON
 
