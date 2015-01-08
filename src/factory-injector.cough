@@ -32,13 +32,13 @@ getCapsule = (type, label/capsule, handler) ->
     capsule.type = type
     capsule
 
-_getInjectedFactory = (template, type) -> (label/capsule) ->
-  getHandlerForType = \eventType ->
-    wrap = getWrapper (type, label/capsule, eventType)
-    \event -> exportReactEvents (wrap event)
+getHandlerForType = (type, label/capsule) -> (eventType) ->
+  wrap = getWrapper (type, label/capsule, eventType)
+  \event -> exportReactEvents (wrap event)
 
+_getInjectedFactory = (template, type) -> (label/capsule) ->
   injectable = createInjectable template
-  injectable.inject getHandlerForType
+  injectable.inject (getHandlerForType (type, label/capsule))
   injectable.getFactory ()
 
 getInjectedFactory = (template, type) ->
