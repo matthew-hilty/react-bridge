@@ -1,5 +1,5 @@
 { getInjectedFactory }         = require './factory-injector'
-{ createClass, createFactory } = require 'react'
+{ createClass, createFactory } = require './react'
 
 encapsulateInfo = (component, state) ->
   { component, state }
