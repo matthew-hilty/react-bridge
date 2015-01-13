@@ -1,0 +1,15 @@
+{ exportReactEvents, getCapsule } = require './factory-injector'
+
+wrapSensitiveComponentWith = (label/capsule) -> (handler, component) ->
+  capsule = getCapsule ('sensitive', label/capsule, handler)
+  capsule.component = component
+  capsule
+
+createSensitizingMixin = (label/capsule) ->
+  wrap = wrapSensitiveComponentWith label/capsule
+
+  trigger = (component, lifeCycleEvent) ->
+    exportReactEvents (wrap (component, lifeCycleEvent))
+
+  componentDidMount    : -> trigger (this, 'onDidMount')
+  componentWillUnmount : -> trigger (this, 'onWillUnmount')
