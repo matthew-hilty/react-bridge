@@ -1,6 +1,9 @@
 hasType = \type \val ->
   "[object #{type}]" == toString val
 
+identity = \arg1 ->
+  arg1
+
 isArray = \val ->
   val instanceof Array
 
