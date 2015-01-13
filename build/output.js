@@ -19935,7 +19935,7 @@ module.exports = {
 
 
 
-},{"./factory-injector":165,"./utilities":169}],164:[function(_dereq_,module,exports){
+},{"./factory-injector":166,"./utilities":169}],164:[function(_dereq_,module,exports){
 var BUTTON, CHECKBOX, FORM, LABEL, LINK, PASSWORD, TEXT, a, button, collectAdapters, dollarize, ensureCheckboxProps, ensureLinkProps, ensurePasswordProps, ensureProps, ensureTextProps, form, getAdapter, input, isObject, isString, label, onChange, onClick, onSubmit, records, shallowCopy, _ref, _ref1;
 
 _ref = _dereq_('./react').DOM, a = _ref.a, button = _ref.button, form = _ref.form, input = _ref.input, label = _ref.label;
@@ -20041,7 +20041,39 @@ module.exports = collectAdapters({}, records);
 
 
 
-},{"./adapter-utilities":163,"./react":167,"./utilities":169}],165:[function(_dereq_,module,exports){
+},{"./adapter-utilities":163,"./react":168,"./utilities":169}],165:[function(_dereq_,module,exports){
+var createSensitizingMixin, exportReactEvents, getCapsule, wrapSensitiveComponentWith, _ref;
+
+_ref = _dereq_('./factory-injector'), exportReactEvents = _ref.exportReactEvents, getCapsule = _ref.getCapsule;
+
+wrapSensitiveComponentWith = function(label_slash_capsule) {
+  return function(handler, component) {
+    var capsule;
+    capsule = getCapsule('sensitive', label_slash_capsule, handler);
+    capsule.component = component;
+    return capsule;
+  };
+};
+
+createSensitizingMixin = function(label_slash_capsule) {
+  var trigger, wrap;
+  wrap = wrapSensitiveComponentWith(label_slash_capsule);
+  trigger = function(component, lifeCycleEvent) {
+    return exportReactEvents(wrap(component, lifeCycleEvent));
+  };
+  return {
+    componentDidMount: function() {
+      return trigger(this, 'onDidMount');
+    },
+    componentWillUnmount: function() {
+      return trigger(this, 'onWillUnmount');
+    }
+  };
+};
+
+
+
+},{"./factory-injector":166}],166:[function(_dereq_,module,exports){
 var connectTo, createInjectable, embedEventInside, eventHandler, exportReactEvents, getCapsule, getHandlerForType, getInjectedFactory, getWrapper, hasher, isFunction, isString, memoize, shallowCopy, stringify, _getInjectedFactory, _ref;
 
 _ref = _dereq_('./utilities'), isFunction = _ref.isFunction, isString = _ref.isString, memoize = _ref.memoize, shallowCopy = _ref.shallowCopy;
@@ -20137,105 +20169,40 @@ stringify = JSON.stringify;
 
 module.exports = {
   connectTo: connectTo,
+  exportReactEvents: exportReactEvents,
+  getCapsule: getCapsule,
   getInjectedFactory: getInjectedFactory
 };
 
 
 
-},{"./utilities":169}],166:[function(_dereq_,module,exports){
-var React, adapters, connectTo, sensitize;
+},{"./utilities":169}],167:[function(_dereq_,module,exports){
+var React, adapters, connectTo, createSensitizingMixin;
 
 adapters = _dereq_('./adapters');
 
 connectTo = _dereq_('./factory-injector').connectTo;
 
-React = _dereq_('./react');
+createSensitizingMixin = _dereq_('./createSensitizingMixin');
 
-sensitize = _dereq_('./sensitive-component');
+React = _dereq_('./react');
 
 module.exports = {
   adapters: adapters,
+  createSensitizingMixin: createSensitizingMixin,
   connectTo: connectTo,
-  React: React,
-  sensitize: sensitize
+  React: React
 };
 
 
 
-},{"./adapters":164,"./factory-injector":165,"./react":167,"./sensitive-component":168}],167:[function(_dereq_,module,exports){
+},{"./adapters":164,"./createSensitizingMixin":165,"./factory-injector":166,"./react":168}],168:[function(_dereq_,module,exports){
 module.exports = _dereq_('react/addons');
 
 
 
-},{"react/addons":2}],168:[function(_dereq_,module,exports){
-var createClass, createFactory, encapsulateInfo, getInjectedFactory, sensitiveRenderMixin, sensitize, template, _ref,
-  __slice = [].slice;
-
-getInjectedFactory = _dereq_('./factory-injector').getInjectedFactory;
-
-_ref = _dereq_('./react'), createClass = _ref.createClass, createFactory = _ref.createFactory;
-
-encapsulateInfo = function(component, state) {
-  return {
-    component: component,
-    state: state
-  };
-};
-
-sensitiveRenderMixin = function(getHandlerForType) {
-  var trigger;
-  trigger = function(component, state) {
-    return getHandlerForType('onStateChange')(encapsulateInfo(component, state));
-  };
-  return {
-    componentDidMount: function() {
-      return trigger(this, 'didMount');
-    },
-    componentWillUnmount: function() {
-      return trigger(this, 'willUnmount');
-    }
-  };
-};
-
-template = function(getHandlerForType) {
-  return function() {
-    var DOMFactory, getComponents, getDOMProps, mixins, sensitiveFactory, sensitiveProps, _DOMProps, _components;
-    DOMFactory = arguments[0], mixins = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-    _components = null;
-    _DOMProps = null;
-    getComponents = function() {
-      return _components;
-    };
-    getDOMProps = function() {
-      return _DOMProps;
-    };
-    sensitiveProps = {
-      mixins: mixins.concat([sensitiveRenderMixin(getHandlerForType)]),
-      render: function() {
-        return DOMFactory.apply(null, [getDOMProps()].concat(__slice.call(getComponents())));
-      }
-    };
-    sensitiveFactory = createFactory(createClass(sensitiveProps));
-    return function() {
-      var DOMProps, components;
-      DOMProps = arguments[0], components = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-      sensitiveProps = DOMProps.sensitiveProps;
-      delete DOMProps.sensitiveProps;
-      _DOMProps = DOMProps;
-      _components = components;
-      return sensitiveFactory(sensitiveProps);
-    };
-  };
-};
-
-sensitize = getInjectedFactory(template, 'sensitive');
-
-module.exports = sensitize;
-
-
-
-},{"./factory-injector":165,"./react":167}],169:[function(_dereq_,module,exports){
-var ObjProto, hasType, isArray, isFunction, isObject, isString, memoize, shallowCopy, toString, _ref,
+},{"react/addons":2}],169:[function(_dereq_,module,exports){
+var ObjProto, hasType, identity, isArray, isFunction, isObject, isString, memoize, shallowCopy, toString, _ref,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty;
 
@@ -20243,6 +20210,10 @@ hasType = function(type) {
   return function(val) {
     return ("[object " + type + "]") === toString(val);
   };
+};
+
+identity = function(arg1) {
+  return arg1;
 };
 
 isArray = function(val) {
@@ -20303,6 +20274,6 @@ module.exports = {
 
 
 
-},{}]},{},[166])
-(166)
+},{}]},{},[167])
+(167)
 });
