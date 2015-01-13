@@ -53,4 +53,9 @@ hasher = \val ->
 
 { stringify } = JSON
 
-module.exports = { connectTo, getInjectedFactory }
+module.exports = {
+  connectTo
+  exportReactEvents
+  getCapsule
+  getInjectedFactory
+}
