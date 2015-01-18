@@ -1,6 +1,6 @@
-getAdapters            = require './adapters'
 { connectTo }          = require './factory-injector'
 createSensitizingMixin = require './createSensitizingMixin'
+getAdapters            = require './getAdapters'
 
 getBridge = \DOMElements ->
   adapters = getAdapters DOMElements
