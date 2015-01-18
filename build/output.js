@@ -60,7 +60,142 @@ module.exports = {
 
 
 
-},{"./factory-injector":4,"./utilities":6}],2:[function(_dereq_,module,exports){
+},{"./factory-injector":3,"./utilities":6}],2:[function(_dereq_,module,exports){
+var createSensitizingMixin, exportReactEvents, getCapsule, wrapSensitiveComponentWith, _ref;
+
+_ref = _dereq_('./factory-injector'), exportReactEvents = _ref.exportReactEvents, getCapsule = _ref.getCapsule;
+
+wrapSensitiveComponentWith = function(label_slash_capsule) {
+  return function(handler, component) {
+    var capsule;
+    capsule = getCapsule('sensitive', label_slash_capsule, handler);
+    capsule.component = component;
+    return capsule;
+  };
+};
+
+createSensitizingMixin = function(label_slash_capsule) {
+  var trigger, wrap;
+  wrap = wrapSensitiveComponentWith(label_slash_capsule);
+  trigger = function(component, lifeCycleEvent) {
+    return exportReactEvents(wrap(component, lifeCycleEvent));
+  };
+  return {
+    componentDidMount: function() {
+      return trigger(this, 'onDidMount');
+    },
+    componentWillUnmount: function() {
+      return trigger(this, 'onWillUnmount');
+    }
+  };
+};
+
+
+
+},{"./factory-injector":3}],3:[function(_dereq_,module,exports){
+var connectTo, createInjectable, embedEventInside, eventHandler, exportReactEvents, getCapsule, getHandlerForType, getInjectedFactory, getWrapper, hasher, isFunction, isString, memoize, shallowCopy, stringify, _getInjectedFactory, _ref;
+
+_ref = _dereq_('./utilities'), isFunction = _ref.isFunction, isString = _ref.isString, memoize = _ref.memoize, shallowCopy = _ref.shallowCopy;
+
+eventHandler = null;
+
+connectTo = function(_eventHandler) {
+  return eventHandler = _eventHandler;
+};
+
+createInjectable = function(template) {
+  var getFactory, getHandlerForType, inject;
+  getHandlerForType = null;
+  inject = function(_getHandlerForType) {
+    return getHandlerForType = _getHandlerForType;
+  };
+  getFactory = function() {
+    if (isFunction(getHandlerForType)) {
+      return template(getHandlerForType);
+    }
+  };
+  return {
+    inject: inject,
+    getFactory: getFactory
+  };
+};
+
+embedEventInside = function(capsule) {
+  return function(event) {
+    capsule.event = event;
+    return capsule;
+  };
+};
+
+exportReactEvents = function(event) {
+  if (isFunction(eventHandler)) {
+    return eventHandler(event);
+  }
+};
+
+getCapsule = function(type, label_slash_capsule, handler) {
+  var capsule;
+  if (isString(label_slash_capsule)) {
+    return {
+      handler: handler,
+      label: label_slash_capsule,
+      type: type
+    };
+  } else {
+    capsule = shallowCopy(label_slash_capsule);
+    capsule.handler = handler;
+    capsule.type = type;
+    return capsule;
+  }
+};
+
+getHandlerForType = function(type, label_slash_capsule) {
+  return function(eventType) {
+    var wrap;
+    wrap = getWrapper(type, label_slash_capsule, eventType);
+    return function(event) {
+      return exportReactEvents(wrap(event));
+    };
+  };
+};
+
+_getInjectedFactory = function(template, type) {
+  return function(label_slash_capsule) {
+    var injectable;
+    injectable = createInjectable(template);
+    injectable.inject(getHandlerForType(type, label_slash_capsule));
+    return injectable.getFactory();
+  };
+};
+
+getInjectedFactory = function(template, type) {
+  return memoize(_getInjectedFactory(template, type), hasher);
+};
+
+getWrapper = function(type, label_slash_capsule, eventType) {
+  return embedEventInside(getCapsule(type, label_slash_capsule, eventType));
+};
+
+hasher = function(val) {
+  if (isString(val)) {
+    return val;
+  } else {
+    return stringify(val);
+  }
+};
+
+stringify = JSON.stringify;
+
+module.exports = {
+  connectTo: connectTo,
+  exportReactEvents: exportReactEvents,
+  getCapsule: getCapsule,
+  getInjectedFactory: getInjectedFactory
+};
+
+
+
+},{"./utilities":6}],4:[function(_dereq_,module,exports){
 var BUTTON, CHECKBOX, FORM, LABEL, LINK, PASSWORD, TEXT, collectAdapters, dollarize, ensureCheckboxProps, ensureLinkProps, ensurePasswordProps, ensureProps, ensureTextProps, getAdapter, getAdapters, isObject, isString, onChange, onClick, onSubmit, shallowCopy, _ref;
 
 getAdapter = _dereq_('./adapter-utilities').getAdapter;
@@ -169,149 +304,14 @@ module.exports = getAdapters;
 
 
 
-},{"./adapter-utilities":1,"./utilities":6}],3:[function(_dereq_,module,exports){
-var createSensitizingMixin, exportReactEvents, getCapsule, wrapSensitiveComponentWith, _ref;
-
-_ref = _dereq_('./factory-injector'), exportReactEvents = _ref.exportReactEvents, getCapsule = _ref.getCapsule;
-
-wrapSensitiveComponentWith = function(label_slash_capsule) {
-  return function(handler, component) {
-    var capsule;
-    capsule = getCapsule('sensitive', label_slash_capsule, handler);
-    capsule.component = component;
-    return capsule;
-  };
-};
-
-createSensitizingMixin = function(label_slash_capsule) {
-  var trigger, wrap;
-  wrap = wrapSensitiveComponentWith(label_slash_capsule);
-  trigger = function(component, lifeCycleEvent) {
-    return exportReactEvents(wrap(component, lifeCycleEvent));
-  };
-  return {
-    componentDidMount: function() {
-      return trigger(this, 'onDidMount');
-    },
-    componentWillUnmount: function() {
-      return trigger(this, 'onWillUnmount');
-    }
-  };
-};
-
-
-
-},{"./factory-injector":4}],4:[function(_dereq_,module,exports){
-var connectTo, createInjectable, embedEventInside, eventHandler, exportReactEvents, getCapsule, getHandlerForType, getInjectedFactory, getWrapper, hasher, isFunction, isString, memoize, shallowCopy, stringify, _getInjectedFactory, _ref;
-
-_ref = _dereq_('./utilities'), isFunction = _ref.isFunction, isString = _ref.isString, memoize = _ref.memoize, shallowCopy = _ref.shallowCopy;
-
-eventHandler = null;
-
-connectTo = function(_eventHandler) {
-  return eventHandler = _eventHandler;
-};
-
-createInjectable = function(template) {
-  var getFactory, getHandlerForType, inject;
-  getHandlerForType = null;
-  inject = function(_getHandlerForType) {
-    return getHandlerForType = _getHandlerForType;
-  };
-  getFactory = function() {
-    if (isFunction(getHandlerForType)) {
-      return template(getHandlerForType);
-    }
-  };
-  return {
-    inject: inject,
-    getFactory: getFactory
-  };
-};
-
-embedEventInside = function(capsule) {
-  return function(event) {
-    capsule.event = event;
-    return capsule;
-  };
-};
-
-exportReactEvents = function(event) {
-  if (isFunction(eventHandler)) {
-    return eventHandler(event);
-  }
-};
-
-getCapsule = function(type, label_slash_capsule, handler) {
-  var capsule;
-  if (isString(label_slash_capsule)) {
-    return {
-      handler: handler,
-      label: label_slash_capsule,
-      type: type
-    };
-  } else {
-    capsule = shallowCopy(label_slash_capsule);
-    capsule.handler = handler;
-    capsule.type = type;
-    return capsule;
-  }
-};
-
-getHandlerForType = function(type, label_slash_capsule) {
-  return function(eventType) {
-    var wrap;
-    wrap = getWrapper(type, label_slash_capsule, eventType);
-    return function(event) {
-      return exportReactEvents(wrap(event));
-    };
-  };
-};
-
-_getInjectedFactory = function(template, type) {
-  return function(label_slash_capsule) {
-    var injectable;
-    injectable = createInjectable(template);
-    injectable.inject(getHandlerForType(type, label_slash_capsule));
-    return injectable.getFactory();
-  };
-};
-
-getInjectedFactory = function(template, type) {
-  return memoize(_getInjectedFactory(template, type), hasher);
-};
-
-getWrapper = function(type, label_slash_capsule, eventType) {
-  return embedEventInside(getCapsule(type, label_slash_capsule, eventType));
-};
-
-hasher = function(val) {
-  if (isString(val)) {
-    return val;
-  } else {
-    return stringify(val);
-  }
-};
-
-stringify = JSON.stringify;
-
-module.exports = {
-  connectTo: connectTo,
-  exportReactEvents: exportReactEvents,
-  getCapsule: getCapsule,
-  getInjectedFactory: getInjectedFactory
-};
-
-
-
-},{"./utilities":6}],5:[function(_dereq_,module,exports){
+},{"./adapter-utilities":1,"./utilities":6}],5:[function(_dereq_,module,exports){
 var connectTo, createSensitizingMixin, getAdapters, getBridge;
-
-getAdapters = _dereq_('./adapters');
 
 connectTo = _dereq_('./factory-injector').connectTo;
 
 createSensitizingMixin = _dereq_('./createSensitizingMixin');
+
+getAdapters = _dereq_('./getAdapters');
 
 getBridge = function(DOMElements) {
   var adapters;
@@ -327,7 +327,7 @@ module.exports = getBridge;
 
 
 
-},{"./adapters":2,"./createSensitizingMixin":3,"./factory-injector":4}],6:[function(_dereq_,module,exports){
+},{"./createSensitizingMixin":2,"./factory-injector":3,"./getAdapters":4}],6:[function(_dereq_,module,exports){
 var ObjProto, hasType, identity, isArray, isFunction, isObject, isString, memoize, shallowCopy, toString, _ref,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty;
