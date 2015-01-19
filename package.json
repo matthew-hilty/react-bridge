@@ -1,6 +1,6 @@
 {
   "name": "react-bridge",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A library that aggregates React events and buses them to a definable client function.",
   "directories": {
     "lib": "./lib"
@@ -24,7 +24,4 @@
   ],
   "author": "Matthew Hilty",
   "license": "MIT",
-  "dependencies": {
-    "react": "~0.12.2"
-  }
 }
